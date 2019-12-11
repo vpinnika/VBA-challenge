@@ -1,0 +1,254 @@
+Sub Add_Titles()
+'Procedure for adding Titles
+
+    'Adding all required Titles and Applying AutoFit Format
+    Range("I1").Value = "Ticker"
+    Range("I1").EntireColumn.AutoFit
+    
+    Range("J1").Value = "Yearly Change"
+    Range("J1").EntireColumn.AutoFit
+    
+    Range("K1").Value = "Percent Change"
+    Range("K1").EntireColumn.AutoFit
+    
+    Range("L1").Value = "Total Stock Volume"
+    Range("L1").EntireColumn.AutoFit
+    
+    Range("O2").Value = "Greatest % Increase"
+    Range("O2").EntireColumn.AutoFit
+    
+    Range("O3").Value = "Greatest % Decrease"
+    Range("O3").EntireColumn.AutoFit
+    
+    Range("O4").Value = "Greatest Total Volume"
+    Range("O4").EntireColumn.AutoFit
+    
+    Range("P1").Value = "Ticker"
+    Range("P1").EntireColumn.AutoFit
+    
+    Range("Q1").Value = "Value"
+    Range("Q1").EntireColumn.AutoFit
+    
+       
+End Sub
+
+Sub Get_Summary_Values()
+'Procedure to Calculate and Populate Summary Columns
+
+    'Set an initial variable for holding the ticker name
+    Dim Ticker_Name As String
+    
+    'Set an initial variable for holding the total per Ticker
+    Dim Total_Stock_Volume As Double
+    Total_Stock_Volume = 0
+    
+    'Keep track of the location for each Ticker in Stock data table
+     Dim Stock_Table_Row As Integer
+     Stock_Table_Row = 2
+      
+    'Set Initial Variables to hold Open Price, Closing Price, Yearly Change and Percent Change
+    Dim Open_Price As Double
+    Dim Close_Price As Double
+    Dim Yearly_Change As Double
+    Dim Percent_Change As Double
+      
+    ' Geeting the open price for first Ticker
+    Open_Price = Cells(2, 3).Value
+
+    ' Loop through all records
+    For i = 2 To Cells(Rows.Count, 1).End(xlUp).Row
+
+        ' Check if we are still within the same Ticker, if it is not...
+        If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+
+            'Set the Ticker name
+            Ticker_Name = Cells(i, 1).Value
+            
+            'Add to the Total Stock Volume
+            Total_Stock_Volume = Total_Stock_Volume + Cells(i, 7).Value
+                  
+            'Getting Closing Price
+            Close_Price = Cells(i, 6).Value
+            
+            'Print the Distinct Ticker Name in the Summary Table
+            Range("I" & Stock_Table_Row).Value = Ticker_Name
+            
+            'Print the Total Stock Volume to the Summary Table
+            Range("L" & Stock_Table_Row).Value = Total_Stock_Volume
+                        
+            'Calculating Yearly Change
+            Yearly_Change = Close_Price - Open_Price
+            
+            'Print the Yearly Change to the Summary Table
+            Range("J" & Stock_Table_Row).Value = Yearly_Change
+            
+            If Open_Price = 0 Then
+                Percent_Change = Close_Price - Open_Price
+            Else
+                Percent_Change = (Close_Price - Open_Price) / Open_Price
+            End If
+                                              
+            'Printing Percentage Change to Summary Table
+            Range("K" & Stock_Table_Row).Value = Percent_Change
+                       
+            'Add one to the Summary table row
+            Stock_Table_Row = Stock_Table_Row + 1
+                  
+            'Reset the Brand Total
+            Total_Stock_Volume = 0
+            
+            'Geeting the open price for new Ticker
+            Open_Price = Cells(i + 1, 3).Value
+
+        'If the cell immediately following a row is the same brand...
+        Else
+            
+            'If Open Price is zero then get next day Open Price
+            If Open_Price = 0 Then
+                Open_Price = Cells(i, 3).Value
+             End If
+                         
+            ' Add to the Brand Total
+            Total_Stock_Volume = Total_Stock_Volume + Cells(i, 7).Value
+
+        End If
+
+    Next i
+
+End Sub
+
+
+Sub Format_Cells()
+'Procedure to Format Cells
+
+    'Color Formating for Yearly Change Column (Red for negative integer and Green for Possitive Integer)
+    For i = 2 To Cells(Rows.Count, 10).End(xlUp).Row
+     
+        If Cells(i, 10).Value > 0 Then
+              Cells(i, 10).Interior.Color = RGB(0, 255, 0)
+        ElseIf Cells(i, 10).Value < 0 Then
+              Cells(i, 10).Interior.Color = RGB(255, 0, 0)
+        End If
+      
+    Next i
+    
+    'Formating Percent Change cells
+    For j = 2 To Cells(Rows.Count, 11).End(xlUp).Row
+     
+        ActiveSheet.Range("K2:K" & j).NumberFormat = "0.00%"
+      
+    Next j
+                 
+End Sub
+
+Sub Calculate_Min_Max_Values()
+'Procedure to Calculate Greatest Total Volume, Greatest Increase, Greatest Decrease and Corresponding Ticker values
+
+    'Declaring Variables
+    Dim greatest_total_volume As Double
+    Dim greatest_increase As Double
+    Dim greatest_decrease As Double
+    
+    Dim total_volume_ticker As String
+    Dim increase_ticker As String
+    Dim decrease_ticker As String
+
+    'Initializing the varaible with 2nd row values
+    greatest_total_volume = Cells(2, 12).Value
+    greatest_increase = Cells(2, 11).Value
+    greatest_decrease = Cells(2, 11).Value
+     
+    total_volume_ticker = Cells(2, 9).Value
+    increase_ticker = Cells(2, 9).Value
+    decrease_ticker = Cells(2, 9).Value
+
+    'Get Greatest Total Volume and corresponding Ticker
+    For i = 2 To Cells(Rows.Count, 12).End(xlUp).Row
+        
+            'Getting Greatest Total Volume value and Ticker
+            If Cells(i, 12).Value > greatest_total_volume Then
+
+               greatest_total_volume = Cells(i, 12).Value
+               total_volume_ticker = Cells(i, 9).Value
+               
+            End If
+            
+    Next i
+    
+    'Get Greatest Increase and Greatest Decrease and Corresponding Tickers
+    For i = 2 To Cells(Rows.Count, 11).End(xlUp).Row
+                      
+            'Getting Createst Increase Value and Ticker
+            If Cells(i, 11).Value > greatest_increase Then
+
+               greatest_increase = Cells(i, 11).Value
+               increase_ticker = Cells(i, 9).Value
+               
+            End If
+            
+            'Getting Createst Decrease Value and Ticker
+            If Cells(i, 11).Value < greatest_decrease Then
+
+               greatest_decrease = Cells(i, 11).Value
+               decrease_ticker = Cells(i, 9).Value
+               
+            End If
+
+    Next i
+    
+    'Printing Greatest Volume Ticker to the Table
+    Cells(4, 16).Value = total_volume_ticker
+    
+    'Printing Greatest Volume value to the Table
+    Cells(4, 17).Value = greatest_total_volume
+    
+    'Auto Fitting the Cell Q4 for Greatest Total Volume
+    Range("Q4").EntireColumn.AutoFit
+    
+    'Printing Greatest Increase Ticker to the Table
+    Cells(2, 16).Value = increase_ticker
+    
+    'Printing Greatest Increase Value to the Table
+    Cells(2, 17).Value = Format(greatest_increase, "0.00%")
+    
+    'Printing Greatest Decrease Ticker to the Table
+    Cells(3, 16).Value = decrease_ticker
+    
+    'Printing Greatest Decrease Value to the Table
+    Cells(3, 17).Value = Format(greatest_decrease, "0.00%")
+    
+End Sub
+
+
+Public Sub Main()
+'This is the main procedure used to execute all procedure for all Worksheets
+
+    'Declaring a Variable
+    Dim i As Integer
+    
+    i = 1
+    
+    ' Looping through All Worksheets '
+    Do While i <= Worksheets.Count
+        
+        'Selecting Active Worksheet
+        Worksheets(i).Select
+        
+        'Calling the procedure Add_Titles()to add Titles
+        Add_Titles
+        
+        'Calling the procedue Get_Summary_Values()
+        Get_Summary_Values
+        
+        'Calling the procedure Sub Format_Cells()
+        Format_Cells
+        
+        'Callin the procedure Calculate_Min_Max_Values()
+        Calculate_Min_Max_Values
+        
+        i = i + 1
+
+    Loop
+    
+End Sub
+
